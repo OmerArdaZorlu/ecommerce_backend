@@ -1,28 +1,27 @@
 # Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/ecommerce_analytics
 spring.datasource.username=postgres
-spring.datasource.password=Asd180Qwe123
+spring.datasource.password=YOUR_DB_PASSWORD
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.flyway.enabled=false
 
 # JWT
-# Bunu degistir: en az 256-bit Base64 encoded secret key olmali
-jwt.secret=bXlTZWNyZXRLZXlGb3JFY29tbWVyY2VQcm9qZWN0V2l0aEpXVDI1NkJpdA==
+jwt.secret=YOUR_BASE64_256BIT_SECRET
 jwt.expiration=900000
 
 # Mail (Gmail SMTP)
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=e1877770@gmail.com
-spring.mail.password=htdvqfyhcvqcyals
+spring.mail.username=YOUR_GMAIL_ADDRESS
+spring.mail.password=YOUR_GMAIL_APP_PASSWORD
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
-app.mail.from=DataPulse <e1877770@gmail.com>
+app.mail.from=DataPulse <YOUR_GMAIL_ADDRESS>
 
 # Google OAuth2
-spring.security.oauth2.client.registration.google.client-id=939840379486-gtu56q1co9vpa8do3s5chv2kqsgbbklf.apps.googleusercontent.com
-spring.security.oauth2.client.registration.google.client-secret=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
+spring.security.oauth2.client.registration.google.client-id=YOUR_GOOGLE_CLIENT_ID
+spring.security.oauth2.client.registration.google.client-secret=YOUR_GOOGLE_CLIENT_SECRET
 spring.security.oauth2.client.registration.google.scope=email,profile
 
 # App
