@@ -16,15 +16,18 @@ public class AuthController {
 
     private final AuthService authService;
     private final TwoFactorService twoFactorService;
+    private final com.ecommerce.main.security.ReCaptchaService reCaptchaService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+        reCaptchaService.verify(request.getRecaptchaToken());
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletRequest httpRequest) {
+        reCaptchaService.verify(request.getRecaptchaToken());
         String deviceName = httpRequest.getHeader("User-Agent");
         String ipAddress = httpRequest.getRemoteAddr();
         return ResponseEntity.ok(authService.login(request, deviceName, ipAddress));

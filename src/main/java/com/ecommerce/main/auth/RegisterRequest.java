@@ -25,4 +25,7 @@ public class RegisterRequest {
     private Role role; // CORPORATE veya INDIVIDUAL (ADMIN self-register yapamaz)
 
     private String gender;
+
+    @NotBlank
+    private String recaptchaToken;
 }

@@ -104,13 +104,15 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshTokenValue = UUID.randomUUID().toString();
 
+        int tokenDays = request.isRememberMe() ? 30 : 1;
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
                 .token(refreshTokenValue)
-                .expiresAt(LocalDateTime.now().plusDays(7))
+                .expiresAt(LocalDateTime.now().plusDays(tokenDays))
                 .deviceName(deviceName)
                 .ipAddress(ipAddress)
                 .lastSeen(LocalDateTime.now())
+                .rememberMe(request.isRememberMe())
                 .build();
 
         refreshTokenRepository.save(refreshToken);
@@ -263,10 +265,12 @@ public class AuthService {
         String newAccessToken = jwtService.generateToken(user.getEmail());
         String newRefreshTokenValue = UUID.randomUUID().toString();
 
+        int tokenDays = refreshToken.isRememberMe() ? 30 : 1;
         RefreshToken newRefreshToken = RefreshToken.builder()
                 .user(user)
                 .token(newRefreshTokenValue)
-                .expiresAt(LocalDateTime.now().plusDays(7))
+                .expiresAt(LocalDateTime.now().plusDays(tokenDays))
+                .rememberMe(refreshToken.isRememberMe())
                 .build();
 
         refreshTokenRepository.save(newRefreshToken);

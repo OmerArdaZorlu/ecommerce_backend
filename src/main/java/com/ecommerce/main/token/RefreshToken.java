@@ -41,4 +41,8 @@ public class RefreshToken {
 
     @Column(name = "last_seen")
     private LocalDateTime lastSeen;
+
+    @Builder.Default
+    @Column(name = "remember_me", nullable = false)
+    private boolean rememberMe = false;
 }

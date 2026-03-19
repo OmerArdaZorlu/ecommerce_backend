@@ -13,4 +13,9 @@ public class LoginRequest {
 
     @NotBlank
     private String password;
+
+    private boolean rememberMe = false;
+
+    @NotBlank
+    private String recaptchaToken;
 }
