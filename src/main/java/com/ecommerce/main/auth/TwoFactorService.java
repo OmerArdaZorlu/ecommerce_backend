@@ -1,10 +1,17 @@
 package com.ecommerce.main.auth;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ecommerce.main.security.JwtService;
 import com.ecommerce.main.token.RefreshToken;
 import com.ecommerce.main.token.RefreshTokenRepository;
 import com.ecommerce.main.user.User;
 import com.ecommerce.main.user.UserRepository;
+
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
@@ -14,15 +21,8 @@ import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.UUID;
-
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

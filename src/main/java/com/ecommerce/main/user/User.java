@@ -39,8 +39,6 @@ public class User {
     @Column(name = "role_type", nullable = false)
     private Role roleType;
 
-    private String gender;
-
     @Builder.Default
     @Column(name = "is_verified", nullable = false)
     private boolean verified = false;
