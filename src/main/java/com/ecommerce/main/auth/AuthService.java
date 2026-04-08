@@ -10,6 +10,7 @@ import com.ecommerce.main.user.Role;
 import com.ecommerce.main.user.User;
 import com.ecommerce.main.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class AuthService {
 
     private static final int MAX_FAILED_ATTEMPTS = 5;
     private static final int LOCK_DURATION_MINUTES = 15;
+
+    @Value("${email.verification.enabled:true}")
+    private boolean emailVerificationEnabled;
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -49,14 +53,19 @@ public class AuthService {
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .roleType(request.getRole())
-                .gender(request.getGender())
                 .build();
 
-        userRepository.save(user);
-        sendVerificationCode(user);
+        if (emailVerificationEnabled) {
+            userRepository.save(user);
+            sendVerificationCode(user);
+            auditLogService.log(AuditEventType.REGISTER, request.getEmail(), null, null);
+            return "Kayit basarili. Lutfen emailinizi dogrulayin.";
+        }
 
+        user.setVerified(true);
+        userRepository.save(user);
         auditLogService.log(AuditEventType.REGISTER, request.getEmail(), null, null);
-        return "Kayit basarili. Lutfen emailinizi dogrulayin.";
+        return "Kayit basarili.";
     }
 
     @Transactional
@@ -82,7 +91,7 @@ public class AuthService {
             throw new BadCredentialsException("Gecersiz email veya sifre");
         }
 
-        if (!user.isVerified()) {
+        if (emailVerificationEnabled && !user.isVerified()) {
             throw new IllegalStateException("Lutfen once emailinizi dogrulayin");
         }
 

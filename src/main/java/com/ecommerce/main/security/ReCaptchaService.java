@@ -12,6 +12,9 @@ public class ReCaptchaService {
     @Value("${recaptcha.secret-key}")
     private String secretKey;
 
+    @Value("${recaptcha.enabled:true}")
+    private boolean enabled;
+
     private static final String VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -19,6 +22,8 @@ public class ReCaptchaService {
     private static final double MIN_SCORE = 0.5;
 
     public void verify(String token) {
+        if (!enabled) return;
+
         String url = VERIFY_URL + "?secret=" + secretKey + "&response=" + token;
 
         @SuppressWarnings("unchecked")

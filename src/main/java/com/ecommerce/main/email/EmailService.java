@@ -1,10 +1,11 @@
 package com.ecommerce.main.email;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +23,12 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Email Verification - DataPulse");
+        message.setSubject("Email Verification - Ecom");
         message.setText(
             "Merhaba,\n\n" +
             "Dogrulama kodunuz: " + code + "\n\n" +
             "Bu kod 15 dakika gecerlidir.\n\n" +
-            "DataPulse Team"
+            "Ecom"
         );
 
         mailSender.send(message);
@@ -37,12 +38,12 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Password Reset - DataPulse");
+        message.setSubject("Password Reset - Ecom");
         message.setText(
             "Merhaba,\n\n" +
             "Sifre sifirlama kodunuz: " + code + "\n\n" +
             "Bu kod 15 dakika gecerlidir.\n\n" +
-            "DataPulse Team"
+            "Ecom Team"
         );
 
         mailSender.send(message);
