@@ -57,6 +57,10 @@ public class Order {
     @Column(name = "increment_id")
     private String incrementId;
 
+    /** Blockchain transaction hash — only set for CRYPTO_WALLET payments */
+    @Column(name = "tx_hash")
+    private String txHash;
+
     @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();

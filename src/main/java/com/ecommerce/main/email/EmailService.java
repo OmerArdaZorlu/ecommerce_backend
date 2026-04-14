@@ -34,6 +34,21 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    public void sendRegistrationAttemptEmail(String toEmail) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Kayit Girişimi - Ecom");
+        message.setText(
+            "Merhaba,\n\n" +
+            "Bu email adresiyle yeni bir hesap acilmaya calisildi. " +
+            "Eger bu siz degilseniz, hesabiniz guvendedir ve herhangi bir islem yapmaniza gerek yoktur.\n\n" +
+            "Sifrenizi degistirmek isterseniz sifre sifirlama sayfasini kullanabilirsiniz.\n\n" +
+            "Ecom"
+        );
+        mailSender.send(message);
+    }
+
     public void sendPasswordResetEmail(String toEmail, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);

@@ -8,4 +8,5 @@ public class StoreRequest {
     @NotBlank
     private String name;
     private String description;
+    private String address;
 }

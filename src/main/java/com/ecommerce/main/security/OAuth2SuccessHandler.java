@@ -62,16 +62,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .build();
         refreshTokenRepository.save(refreshToken);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String json = String.format(
-                "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\",\"email\":\"%s\",\"name\":\"%s\",\"role\":\"%s\"}",
+        String redirectUrl = String.format(
+                "http://localhost:4200/auth/oauth2/callback?accessToken=%s&refreshToken=%s&email=%s&name=%s&role=%s",
                 accessToken,
                 refreshToken.getToken(),
-                email,
-                name,
+                java.net.URLEncoder.encode(email, java.nio.charset.StandardCharsets.UTF_8),
+                java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8),
                 user.getRoleType()
         );
-        response.getWriter().write(json);
+        response.sendRedirect(redirectUrl);
     }
 }

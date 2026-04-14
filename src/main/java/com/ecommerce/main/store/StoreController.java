@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -49,6 +51,11 @@ public class StoreController {
         return ResponseEntity.ok(storeService.getById(id));
     }
 
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<Map<String, Object>> getStats(@PathVariable Long id) {
+        return ResponseEntity.ok(storeService.getStats(id));
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CORPORATE')")
     public ResponseEntity<Store> create(@Valid @RequestBody StoreRequest request, Authentication auth) {
@@ -68,6 +75,14 @@ public class StoreController {
     public ResponseEntity<Store> changeStatus(@PathVariable Long id,
                                                @RequestParam StoreStatus status) {
         return ResponseEntity.ok(storeService.changeStatus(id, status));
+    }
+
+    @PostMapping("/{id}/logo")
+    @PreAuthorize("hasAnyAuthority('ROLE_CORPORATE', 'ROLE_ADMIN')")
+    public ResponseEntity<Store> uploadLogo(@PathVariable Long id,
+                                            @RequestParam("file") MultipartFile file,
+                                            Authentication auth) {
+        return ResponseEntity.ok(storeService.uploadLogo(id, auth.getName(), file));
     }
 
     @DeleteMapping("/{id}")

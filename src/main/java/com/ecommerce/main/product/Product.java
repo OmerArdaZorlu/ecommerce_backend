@@ -48,6 +48,9 @@ public class Product {
     @Column(name = "product_importance")
     private String productImportance;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;

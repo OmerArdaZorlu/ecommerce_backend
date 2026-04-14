@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -18,6 +19,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT AVG(r.starRating) FROM Review r WHERE r.product.id = :productId")
     Double avgRatingByProduct(@Param("productId") Long productId);
 
+    long countByProductId(Long productId);
+
+    // Batch: avg rating + review count for a list of product IDs in one query
+    @Query("SELECT r.product.id, AVG(r.starRating), COUNT(r) FROM Review r WHERE r.product.id IN :ids GROUP BY r.product.id")
+    List<Object[]> avgAndCountByProductIds(@Param("ids") List<Long> ids);
+
     @Query("SELECT AVG(r.starRating) FROM Review r WHERE r.product.store.id = :storeId")
     Double avgRatingByStore(@Param("storeId") Long storeId);
+
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.product.store.id = :storeId")
+    long countReviewsByStore(@Param("storeId") Long storeId);
 }
