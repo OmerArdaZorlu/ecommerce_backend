@@ -69,6 +69,18 @@ public class AdminController {
         return ResponseEntity.ok(adminService.changeRole(id, role));
     }
 
+    // ── Platform Settings ────────────────────────────────────────────────────
+
+    @GetMapping("/settings")
+    public ResponseEntity<PlatformSettings> getSettings() {
+        return ResponseEntity.ok(adminService.getSettings());
+    }
+
+    @PutMapping("/settings")
+    public ResponseEntity<PlatformSettings> updateSettings(@RequestBody PlatformSettings settings) {
+        return ResponseEntity.ok(adminService.updateSettings(settings));
+    }
+
     // ── Audit Logs ───────────────────────────────────────────────────────────
 
     @GetMapping("/audit-logs")

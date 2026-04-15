@@ -26,6 +26,7 @@ public class AdminService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final PlatformSettingsRepository settingsRepository;
 
     @Transactional(readOnly = true)
     public AdminAnalyticsResponse getPlatformAnalytics() {
@@ -97,6 +98,18 @@ public class AdminService {
         User user = findUser(id);
         user.setRoleType(newRole);
         return UserResponse.from(userRepository.save(user));
+    }
+
+    @Transactional(readOnly = true)
+    public PlatformSettings getSettings() {
+        return settingsRepository.findById(1L).orElseGet(() ->
+                settingsRepository.save(PlatformSettings.builder().id(1L).build()));
+    }
+
+    @Transactional
+    public PlatformSettings updateSettings(PlatformSettings incoming) {
+        incoming.setId(1L);
+        return settingsRepository.save(incoming);
     }
 
     private User findUser(Long id) {
