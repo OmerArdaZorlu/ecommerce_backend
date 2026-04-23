@@ -16,7 +16,8 @@ public record CartResponse(
             String productSku,
             double unitPrice,
             Integer quantity,
-            double subtotal
+            double subtotal,
+            String imageUrl
     ) {}
 
     public static CartResponse from(Cart cart) {
@@ -28,7 +29,8 @@ public record CartResponse(
                         i.getProduct().getSku(),
                         i.getProduct().getUnitPrice(),
                         i.getQuantity(),
-                        i.getProduct().getUnitPrice() * i.getQuantity()
+                        i.getProduct().getUnitPrice() * i.getQuantity(),
+                        i.getProduct().getImageUrl()
                 ))
                 .toList();
 

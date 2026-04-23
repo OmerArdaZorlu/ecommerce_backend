@@ -1,5 +1,7 @@
 package com.ecommerce.main.cart;
 
+import com.ecommerce.main.coupon.Coupon;
+import com.ecommerce.main.coupon.CouponRepository;
 import com.ecommerce.main.crypto.BlockchainVerificationService;
 import com.ecommerce.main.crypto.CryptoVerificationResult;
 import com.ecommerce.main.order.*;
@@ -7,10 +9,16 @@ import com.ecommerce.main.product.Product;
 import com.ecommerce.main.product.ProductRepository;
 import com.ecommerce.main.user.User;
 import com.ecommerce.main.user.UserRepository;
+import com.stripe.Stripe;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -22,6 +30,13 @@ public class CartService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final BlockchainVerificationService blockchainVerificationService;
+    private final CouponRepository couponRepository;
+
+    @Value("${stripe.secret-key}")
+    private String stripeSecretKey;
+
+    @PostConstruct
+    void initStripe() { Stripe.apiKey = stripeSecretKey; }
 
     /** Mevcut sepeti getir ya da boş sepet döndür */
     @Transactional
@@ -108,7 +123,7 @@ public class CartService {
     /** Checkout: sepeti siparişe dönüştür */
     @Transactional
     public OrderResponse checkout(String email, String paymentMethod, String shippingAddress,
-                                  String txHash, int chainId) {
+                                  String txHash, int chainId, String couponCode) {
         Cart cart = getOrCreateCartEntity(email);
 
         if (cart.getItems().isEmpty()) {
@@ -128,8 +143,55 @@ public class CartService {
             total += cartItem.getQuantity() * cartItem.getProduct().getUnitPrice();
         }
 
-        // ─── Kripto ödeme doğrulaması ─────────────────────────────────────────
-        OrderStatus initialStatus = OrderStatus.PENDING;
+        // ─── Kupon uygulaması ─────────────────────────────────────────────────
+        if (couponCode != null && !couponCode.isBlank()) {
+            Coupon coupon = couponRepository.findByCodeIgnoreCase(couponCode.trim())
+                    .orElseThrow(() -> new IllegalArgumentException("Geçersiz kupon kodu."));
+            if (!coupon.getActive()) throw new IllegalArgumentException("Kupon artık aktif değil.");
+            if (coupon.getExpiresAt() != null && coupon.getExpiresAt().isBefore(LocalDateTime.now()))
+                throw new IllegalArgumentException("Kuponun süresi dolmuş.");
+            if (coupon.getMaxUses() != null && coupon.getUsedCount() >= coupon.getMaxUses())
+                throw new IllegalArgumentException("Kupon kullanım limiti dolmuş.");
+            if (coupon.getStore() != null && !coupon.getStore().getId().equals(store.getId()))
+                throw new IllegalArgumentException("Bu kupon bu mağaza için geçerli değil.");
+
+            if ("PERCENTAGE".equals(coupon.getDiscountType())) {
+                total = total * (1.0 - coupon.getDiscountValue() / 100.0);
+            } else {
+                total = Math.max(0, total - coupon.getDiscountValue());
+            }
+            coupon.setUsedCount(coupon.getUsedCount() + 1);
+            couponRepository.save(coupon);
+        }
+
+        // ─── Stripe charge ────────────────────────────────────────────────────
+        // paymentMethod: "STRIPE_PM:pm_xxx" (yeni kart) veya "STRIPE:pm_xxx:4242" (kayıtlı)
+        if (paymentMethod.startsWith("STRIPE")) {
+            String pmId = extractStripePaymentMethodId(paymentMethod);
+            if (pmId == null || pmId.isBlank()) {
+                throw new IllegalStateException("Geçerli bir Stripe ödeme yöntemi bulunamadı.");
+            }
+            try {
+                long amountCents = Math.round(total * 100);
+                PaymentIntent intent = PaymentIntent.create(
+                    PaymentIntentCreateParams.builder()
+                        .setAmount(amountCents)
+                        .setCurrency("usd")
+                        .setPaymentMethod(pmId)
+                        .setConfirm(true)
+                        .setReturnUrl("http://localhost:4200/app/orders")
+                        .build()
+                );
+                if (!"succeeded".equals(intent.getStatus())) {
+                    throw new IllegalStateException("Stripe ödemesi tamamlanamadı: " + intent.getStatus());
+                }
+            } catch (com.stripe.exception.StripeException e) {
+                throw new IllegalStateException("Stripe hatası: " + e.getMessage());
+            }
+        }
+
+        // ─── Sipariş başlangıç durumu ─────────────────────────────────────────
+        OrderStatus initialStatus = paymentMethod.startsWith("STRIPE") ? OrderStatus.CONFIRMED : OrderStatus.PENDING;
         if (paymentMethod.startsWith("CRYPTO_WALLET")) {
             if (txHash == null || txHash.isBlank()) {
                 throw new IllegalStateException(
@@ -200,5 +262,17 @@ public class CartService {
     private Product findProduct(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
+    }
+
+    /**
+     * "STRIPE_PM:pm_xxx"        → "pm_xxx"
+     * "STRIPE:pm_xxx:4242"      → "pm_xxx"
+     * "STRIPE:Visa:4242"        → null  (eski format, pm_id yok)
+     */
+    private String extractStripePaymentMethodId(String paymentMethod) {
+        String[] parts = paymentMethod.split(":", 3);
+        if (parts.length < 2) return null;
+        String candidate = parts[1];
+        return candidate.startsWith("pm_") ? candidate : null;
     }
 }

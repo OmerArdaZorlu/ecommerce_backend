@@ -3,6 +3,9 @@ package com.ecommerce.main.admin;
 import com.ecommerce.main.audit.AuditEventType;
 import com.ecommerce.main.audit.AuditLog;
 import com.ecommerce.main.audit.AuditLogRepository;
+import com.ecommerce.main.coupon.CouponDto;
+import com.ecommerce.main.order.OrderResponse;
+import com.ecommerce.main.product.ProductResponse;
 import com.ecommerce.main.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,6 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -69,6 +75,25 @@ public class AdminController {
         return ResponseEntity.ok(adminService.changeRole(id, role));
     }
 
+    // ── Store Management ─────────────────────────────────────────────────────
+
+    @GetMapping("/stores")
+    public ResponseEntity<Page<AdminStoreDto>> listStores(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(adminService.listStores(keyword, pageable));
+    }
+
+    @PutMapping("/stores/{id}/status")
+    public ResponseEntity<AdminStoreDto> updateStoreStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        String status = (String) body.get("status");
+        return ResponseEntity.ok(adminService.updateStoreStatus(id, com.ecommerce.main.store.StoreStatus.valueOf(status)));
+    }
+
     // ── Platform Settings ────────────────────────────────────────────────────
 
     @GetMapping("/settings")
@@ -107,5 +132,89 @@ public class AdminController {
             @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(auditLogRepository.findByEventType(type, pageable));
+    }
+
+    // ── Category Management ──────────────────────────────────────────────────
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<CategoryDto>> getCategories() {
+        return ResponseEntity.ok(adminService.getAllCategories());
+    }
+
+    @PostMapping("/categories")
+    public ResponseEntity<CategoryDto> createCategory(@RequestBody Map<String, Object> body) {
+        String name = (String) body.get("name");
+        Long parentId = body.get("parentId") != null ? ((Number) body.get("parentId")).longValue() : null;
+        return ResponseEntity.ok(adminService.createCategory(name, parentId));
+    }
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<CategoryDto> updateCategory(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        String name = (String) body.get("name");
+        Long parentId = body.get("parentId") != null ? ((Number) body.get("parentId")).longValue() : null;
+        return ResponseEntity.ok(adminService.updateCategory(id, name, parentId));
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        adminService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Coupon Management ────────────────────────────────────────────────────
+
+    @GetMapping("/coupons")
+    public ResponseEntity<Page<CouponDto>> listCoupons(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(adminService.listCoupons(pageable));
+    }
+
+    @PostMapping("/coupons")
+    public ResponseEntity<CouponDto> createCoupon(@RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(adminService.createCoupon(body));
+    }
+
+    @DeleteMapping("/coupons/{id}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable Long id) {
+        adminService.deleteCoupon(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/coupons/{id}/toggle")
+    public ResponseEntity<CouponDto> toggleCoupon(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.toggleCoupon(id));
+    }
+
+    // ── Order Management ─────────────────────────────────────────────────────
+
+    @GetMapping("/orders")
+    public ResponseEntity<Page<OrderResponse>> listOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(adminService.listAllOrders(status, pageable));
+    }
+
+    @PatchMapping("/orders/{id}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return ResponseEntity.ok(adminService.updateOrderStatus(id, status));
+    }
+
+    // ── Product Management ───────────────────────────────────────────────────
+
+    @GetMapping("/products")
+    public ResponseEntity<Page<ProductResponse>> listProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(adminService.listAllProducts(keyword, pageable));
     }
 }

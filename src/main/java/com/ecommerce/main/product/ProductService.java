@@ -104,6 +104,7 @@ public class ProductService {
                 .unitPrice(request.getUnitPrice())
                 .stockQuantity(request.getStockQuantity())
                 .productImportance(request.getProductImportance())
+                .imageUrl(request.getImageUrl())
                 .build();
         return ProductResponse.from(productRepository.save(product), null, 0L);
     }
@@ -120,6 +121,9 @@ public class ProductService {
         product.setUnitPrice(request.getUnitPrice());
         product.setStockQuantity(request.getStockQuantity());
         product.setProductImportance(request.getProductImportance());
+        if (request.getImageUrl() != null) {
+            product.setImageUrl(request.getImageUrl());
+        }
 
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
@@ -180,7 +184,7 @@ public class ProductService {
 
     private Map<Long, Object[]> buildRatingMap(List<Long> ids) {
         Map<Long, Object[]> map = new HashMap<>();
-        reviewRepository.avgAndCountByProductIds(ids).forEach(row -> map.put((Long) row[0], row));
+        reviewRepository.avgAndCountByProductIds(ids).forEach(row -> map.put(((Number) row[0]).longValue(), row));
         return map;
     }
 

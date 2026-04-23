@@ -41,13 +41,17 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .invalidSessionUrl("/api/auth/login")
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/exchange-rates",
                         "/api/products", "/api/products/**",
                         "/api/categories", "/api/categories/**",
                         "/api/stores", "/api/stores/**",
                         "/api/reviews/product/**",
+                        "/api/coupons/validate",
                         "/uploads/**",
                         "/error", "/oauth2/**", "/login/oauth2/**",
                         "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()

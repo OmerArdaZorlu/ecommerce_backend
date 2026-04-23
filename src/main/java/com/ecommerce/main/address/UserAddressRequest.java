@@ -9,6 +9,5 @@ public class UserAddressRequest {
     private String city;
     private String district;
     private String postalCode;
-    private String phone;
     private boolean isDefault;
 }

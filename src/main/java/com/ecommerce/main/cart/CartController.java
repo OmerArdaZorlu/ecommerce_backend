@@ -55,8 +55,9 @@ public class CartController {
             @RequestParam String shippingAddress,
             @RequestParam(required = false) String txHash,
             @RequestParam(required = false, defaultValue = "1") Integer chainId,
+            @RequestParam(required = false) String couponCode,
             Authentication auth) {
         return ResponseEntity.ok(
-            cartService.checkout(auth.getName(), paymentMethod, shippingAddress, txHash, chainId));
+            cartService.checkout(auth.getName(), paymentMethod, shippingAddress, txHash, chainId, couponCode));
     }
 }

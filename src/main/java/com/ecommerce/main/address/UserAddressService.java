@@ -40,7 +40,6 @@ public class UserAddressService {
                 .city(req.getCity())
                 .district(req.getDistrict())
                 .postalCode(req.getPostalCode())
-                .phone(req.getPhone())
                 .isDefault(isFirst || req.isDefault())
                 .build();
 
@@ -61,7 +60,6 @@ public class UserAddressService {
         address.setCity(req.getCity());
         address.setDistrict(req.getDistrict());
         address.setPostalCode(req.getPostalCode());
-        address.setPhone(req.getPhone());
         address.setDefault(req.isDefault());
 
         return UserAddressResponse.from(addressRepository.save(address));

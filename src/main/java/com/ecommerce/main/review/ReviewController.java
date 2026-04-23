@@ -87,11 +87,20 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.respond(id, auth.getName(), response));
     }
 
-    /** Herkese açık: helpful vote */
+    /** Debug: ürün için review sayısı */
+    @GetMapping("/product/{productId}/count")
+    public ResponseEntity<java.util.Map<String, Object>> getReviewCount(@PathVariable Long productId) {
+        long count = reviewService.countByProduct(productId);
+        return ResponseEntity.ok(java.util.Map.of("productId", productId, "reviewCount", count));
+    }
+
+    /** Kayıtlı kullanıcı: helpful vote (kullanıcı başına 1 oy, aynı oy → geri çek) */
     @PostMapping("/{id}/vote")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReviewResponse> vote(
             @PathVariable Long id,
-            @RequestParam boolean helpful) {
-        return ResponseEntity.ok(reviewService.vote(id, helpful));
+            @RequestParam boolean helpful,
+            Authentication auth) {
+        return ResponseEntity.ok(reviewService.vote(id, helpful, auth.getName()));
     }
 }

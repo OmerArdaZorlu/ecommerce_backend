@@ -9,7 +9,6 @@ public record UserAddressResponse(
         String city,
         String district,
         String postalCode,
-        String phone,
         boolean isDefault,
         LocalDateTime createdAt
 ) {
@@ -17,7 +16,7 @@ public record UserAddressResponse(
         return new UserAddressResponse(
                 a.getId(), a.getTitle(), a.getFullAddress(),
                 a.getCity(), a.getDistrict(), a.getPostalCode(),
-                a.getPhone(), a.isDefault(), a.getCreatedAt()
+                a.isDefault(), a.getCreatedAt()
         );
     }
 }
