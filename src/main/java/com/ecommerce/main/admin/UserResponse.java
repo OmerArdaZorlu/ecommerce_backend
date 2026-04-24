@@ -8,7 +8,9 @@ public record UserResponse(
         Long id,
         String name,
         String email,
+        String role,
         String roleType,
+        String status,
         String provider,
         boolean verified,
         boolean twoFactorEnabled,
@@ -17,11 +19,17 @@ public record UserResponse(
         LocalDateTime createdAt
 ) {
     public static UserResponse from(User u) {
+        String roleName = u.getRoleType().name();
+        boolean suspended = u.getLockedUntil() != null
+                && u.getLockedUntil().isAfter(LocalDateTime.now().plusYears(50));
+        String status = suspended ? "SUSPENDED" : "ACTIVE";
         return new UserResponse(
                 u.getId(),
                 u.getName(),
                 u.getEmail(),
-                u.getRoleType().name(),
+                roleName,
+                roleName,
+                status,
                 u.getProvider().name(),
                 u.isVerified(),
                 u.isTwoFactorEnabled(),

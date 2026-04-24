@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -217,7 +218,7 @@ public class AdminService {
     public CouponDto createCoupon(Map<String, Object> body) {
         String code        = ((String) body.get("code")).toUpperCase().trim();
         String type        = (String) body.get("discountType");
-        Double value       = ((Number) body.get("discountValue")).doubleValue();
+        BigDecimal value   = new BigDecimal(body.get("discountValue").toString());
         Long storeId       = body.get("storeId") != null ? ((Number) body.get("storeId")).longValue() : null;
         Integer maxUses    = body.get("maxUses") != null ? ((Number) body.get("maxUses")).intValue() : null;
         String expiresAtStr = (String) body.get("expiresAt");

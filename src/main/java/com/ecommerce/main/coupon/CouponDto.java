@@ -1,10 +1,12 @@
 package com.ecommerce.main.coupon;
 
+import java.math.BigDecimal;
+
 public record CouponDto(
         Long id,
         String code,
         String discountType,
-        Double discountValue,
+        BigDecimal discountValue,
         Long storeId,
         String storeName,
         Integer maxUses,

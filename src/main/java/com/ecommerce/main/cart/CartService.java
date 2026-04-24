@@ -156,9 +156,9 @@ public class CartService {
                 throw new IllegalArgumentException("Bu kupon bu mağaza için geçerli değil.");
 
             if ("PERCENTAGE".equals(coupon.getDiscountType())) {
-                total = total * (1.0 - coupon.getDiscountValue() / 100.0);
+                total = total * (1.0 - coupon.getDiscountValue().doubleValue() / 100.0);
             } else {
-                total = Math.max(0, total - coupon.getDiscountValue());
+                total = Math.max(0, total - coupon.getDiscountValue().doubleValue());
             }
             coupon.setUsedCount(coupon.getUsedCount() + 1);
             couponRepository.save(coupon);

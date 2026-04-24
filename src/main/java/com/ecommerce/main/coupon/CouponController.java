@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -29,11 +30,12 @@ public class CouponController {
         if (coupon.getMaxUses() != null && coupon.getUsedCount() >= coupon.getMaxUses())
             throw new IllegalArgumentException("Kupon kullanım limiti dolmuş.");
 
-        double discount;
+        BigDecimal totalDecimal = BigDecimal.valueOf(total);
+        BigDecimal discount;
         if ("PERCENTAGE".equals(coupon.getDiscountType())) {
-            discount = total * coupon.getDiscountValue() / 100.0;
+            discount = totalDecimal.multiply(coupon.getDiscountValue()).divide(BigDecimal.valueOf(100));
         } else {
-            discount = Math.min(coupon.getDiscountValue(), total);
+            discount = coupon.getDiscountValue().min(totalDecimal);
         }
 
         return ResponseEntity.ok(Map.of(

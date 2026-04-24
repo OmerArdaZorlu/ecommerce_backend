@@ -4,6 +4,7 @@ import com.ecommerce.main.store.Store;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +27,7 @@ public class Coupon {
     private String discountType; // PERCENTAGE or FIXED
 
     @Column(name = "discount_value", nullable = false)
-    private Double discountValue;
+    private BigDecimal discountValue;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
