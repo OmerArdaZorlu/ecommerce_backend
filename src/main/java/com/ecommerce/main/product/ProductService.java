@@ -47,10 +47,12 @@ public class ProductService {
         return enrichPage(productRepository.search(keyword, pageable));
     }
 
-    public Page<ProductResponse> filter(String keyword, Long categoryId, Double minPrice, Double maxPrice, Pageable pageable) {
+    public Page<ProductResponse> filter(String keyword, Long categoryId, Double minPrice, Double maxPrice, Double minRating, String sortOrder, Pageable pageable) {
         Page<Product> page = productRepository.filter(
                 (keyword != null && keyword.isBlank()) ? null : keyword,
-                categoryId, minPrice, maxPrice, pageable);
+                categoryId, minPrice, maxPrice, minRating,
+                (sortOrder != null && !sortOrder.isBlank()) ? sortOrder : null,
+                pageable);
         return enrichPage(page);
     }
 

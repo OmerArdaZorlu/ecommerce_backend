@@ -45,10 +45,12 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) String sortOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(productService.filter(keyword, categoryId, minPrice, maxPrice, pageable));
+        return ResponseEntity.ok(productService.filter(keyword, categoryId, minPrice, maxPrice, minRating, sortOrder, pageable));
     }
 
     @GetMapping("/popular")

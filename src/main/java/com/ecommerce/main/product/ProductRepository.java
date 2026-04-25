@@ -26,26 +26,40 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = """
             SELECT p.* FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN (
+              SELECT product_id, AVG(star_rating) AS avg_rating
+              FROM reviews GROUP BY product_id
+            ) r_agg ON r_agg.product_id = p.id
             WHERE p.active = true
               AND (:keyword IS NULL OR
                    LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(COALESCE(c.name,'')) LIKE LOWER(CONCAT('%', :keyword, '%')))
-              AND (:categoryId IS NULL OR p.category_id = :categoryId)
+              AND (:categoryId IS NULL OR p.category_id = :categoryId OR c.parent_id = :categoryId)
               AND (:minPrice IS NULL OR p.unit_price >= :minPrice)
               AND (:maxPrice IS NULL OR p.unit_price <= :maxPrice)
+              AND (:minRating IS NULL OR COALESCE(r_agg.avg_rating, 0) >= :minRating)
+            ORDER BY
+              CASE WHEN :sortOrder = 'newest' THEN p.created_at END DESC NULLS LAST,
+              CASE WHEN :sortOrder = 'oldest' THEN p.created_at END ASC NULLS LAST,
+              p.id DESC
             """,
            countQuery = """
             SELECT COUNT(*) FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
+            LEFT JOIN (
+              SELECT product_id, AVG(star_rating) AS avg_rating
+              FROM reviews GROUP BY product_id
+            ) r_agg ON r_agg.product_id = p.id
             WHERE p.active = true
               AND (:keyword IS NULL OR
                    LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(COALESCE(c.name,'')) LIKE LOWER(CONCAT('%', :keyword, '%')))
-              AND (:categoryId IS NULL OR p.category_id = :categoryId)
+              AND (:categoryId IS NULL OR p.category_id = :categoryId OR c.parent_id = :categoryId)
               AND (:minPrice IS NULL OR p.unit_price >= :minPrice)
               AND (:maxPrice IS NULL OR p.unit_price <= :maxPrice)
+              AND (:minRating IS NULL OR COALESCE(r_agg.avg_rating, 0) >= :minRating)
             """,
            nativeQuery = true)
     Page<Product> filter(
@@ -53,6 +67,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("categoryId") Long categoryId,
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice,
+            @Param("minRating") Double minRating,
+            @Param("sortOrder") String sortOrder,
             Pageable pageable);
 
     @Query(value = """
