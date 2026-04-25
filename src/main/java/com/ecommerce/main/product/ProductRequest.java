@@ -26,4 +26,6 @@ public class ProductRequest {
 
     // DS3: "Low", "Medium", "High"
     private String productImportance;
+
+    private String imageUrl;
 }

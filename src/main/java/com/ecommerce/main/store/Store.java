@@ -28,6 +28,11 @@ public class Store {
 
     private String description;
 
+    private String address;
+
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(nullable = false)

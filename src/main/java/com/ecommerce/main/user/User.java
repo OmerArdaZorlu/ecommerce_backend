@@ -35,6 +35,9 @@ public class User {
     @Column(name = "google_id")
     private String googleId;
 
+    @Column(name = "facebook_id")
+    private String facebookId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role_type", nullable = false)
     private Role roleType;

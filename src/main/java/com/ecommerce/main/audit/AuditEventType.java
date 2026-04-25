@@ -3,6 +3,7 @@ package com.ecommerce.main.audit;
 public enum AuditEventType {
     // Auth
     REGISTER,
+    REGISTER_EMAIL_CONFLICT,
     LOGIN_SUCCESS,
     LOGIN_FAILED,
     LOGOUT,

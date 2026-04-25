@@ -35,21 +35,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication) throws IOException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
-        String googleId = oAuth2User.getAttribute("sub");
 
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = User.builder()
-                    .email(email)
-                    .name(name)
-                    .googleId(googleId)
-                    .provider(AuthProvider.GOOGLE)
-                    .roleType(Role.INDIVIDUAL)
-                    .verified(true)
-                    .build();
-            return userRepository.save(newUser);
-        });
+        String registrationId = ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication)
+                .getAuthorizedClientRegistrationId();
+
+        User user;
+        if ("facebook".equals(registrationId)) {
+            user = handleFacebook(oAuth2User);
+        } else {
+            user = handleGoogle(oAuth2User);
+        }
 
         refreshTokenRepository.revokeAllByUserId(user.getId());
 
@@ -62,16 +57,51 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .build();
         refreshTokenRepository.save(refreshToken);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String json = String.format(
-                "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\",\"email\":\"%s\",\"name\":\"%s\",\"role\":\"%s\"}",
+        String redirectUrl = String.format(
+                "http://localhost:4200/auth/oauth2/callback?accessToken=%s&refreshToken=%s&email=%s&name=%s&role=%s",
                 accessToken,
                 refreshToken.getToken(),
-                email,
-                name,
+                java.net.URLEncoder.encode(user.getEmail(), java.nio.charset.StandardCharsets.UTF_8),
+                java.net.URLEncoder.encode(user.getName(), java.nio.charset.StandardCharsets.UTF_8),
                 user.getRoleType()
         );
-        response.getWriter().write(json);
+        response.sendRedirect(redirectUrl);
+    }
+
+    private User handleGoogle(OAuth2User oAuth2User) {
+        String email    = oAuth2User.getAttribute("email");
+        String name     = oAuth2User.getAttribute("name");
+        String googleId = oAuth2User.getAttribute("sub");
+
+        return userRepository.findByEmail(email).orElseGet(() -> userRepository.save(
+            User.builder()
+                .email(email).name(name).googleId(googleId)
+                .provider(AuthProvider.GOOGLE)
+                .roleType(Role.INDIVIDUAL).verified(true)
+                .build()
+        ));
+    }
+
+    private User handleFacebook(OAuth2User oAuth2User) {
+        String facebookId = oAuth2User.getAttribute("id");
+        String name       = oAuth2User.getAttribute("name");
+        String email      = oAuth2User.getAttribute("email");
+
+        // Facebook bazen email vermeyebilir — fallback olarak fb ID'den üret
+        if (email == null || email.isBlank()) {
+            email = facebookId + "@facebook-noemail.local";
+        }
+
+        final String finalEmail = email;
+        final String finalFbId  = facebookId;
+        final String finalName  = name;
+
+        return userRepository.findByEmail(finalEmail).orElseGet(() -> userRepository.save(
+            User.builder()
+                .email(finalEmail).name(finalName).facebookId(finalFbId)
+                .provider(AuthProvider.FACEBOOK)
+                .roleType(Role.INDIVIDUAL).verified(true)
+                .build()
+        ));
     }
 }

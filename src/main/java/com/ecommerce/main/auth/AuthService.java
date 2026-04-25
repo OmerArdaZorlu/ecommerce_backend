@@ -40,12 +40,18 @@ public class AuthService {
 
     @Transactional
     public String register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Bu email zaten kullaniliyor");
-        }
-
         if (request.getRole() == Role.ADMIN) {
             throw new IllegalArgumentException("Admin olarak kayit yapilamaz");
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            // Email var olduğunu açıkça belirtmiyoruz (user enumeration güvenlik açığı)
+            // Gerçek kullanıcıya uyarı maili gönderip aynı cevabı dönüyoruz
+            emailService.sendRegistrationAttemptEmail(request.getEmail());
+            auditLogService.log(AuditEventType.REGISTER_EMAIL_CONFLICT, request.getEmail(), null, null, "Mevcut email ile kayit girişimi");
+            return emailVerificationEnabled
+                    ? "Kayit basarili. Lutfen emailinizi dogrulayin."
+                    : "Kayit basarili.";
         }
 
         User user = User.builder()

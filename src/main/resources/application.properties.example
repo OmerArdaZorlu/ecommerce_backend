@@ -27,5 +27,8 @@ spring.security.oauth2.client.registration.google.scope=email,profile
 # App
 app.base-url=http://localhost:8080
 
+# AI Chatbot (Python/LangGraph service)
+chatbot.service.url=http://localhost:8000
+
 # Debug
 logging.level.org.springframework.security=DEBUG
